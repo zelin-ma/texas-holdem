@@ -235,11 +235,11 @@ export function evaluate5CardHand(hand) {
 
 // ----------- step 3 ---------
 /**
- * 评估一名玩家在当前公共牌下的最终牌型
- * 会在「玩家 2 张手牌 + 公共牌（0~5 张）」中选出最强的 5 张牌
+ * Evaluate the final hand type of a player under the current public cards
+* Select the strongest 5 cards from "Player 2's hand + Public cards (0 to 5 cards)"
  *
- * @param {Array} playerCards - 玩家手牌数组，通常长度为 2 [{rank,suit}, {rank,suit}]
- * @param {Array} communityCards - 公共牌数组，长度可以是 0~5
+ * @param {Array} playerCards - The array of the player's hand cards, lengh 2 [{rank,suit}, {rank,suit}]
+ * @param {Array} communityCards - The array of public cards,length 0 to 5.
  * @returns {{
  *   rank: number,          // 牌型类别，等于 evaluate5CardHand 的 category（0~8）
  *   tiebreakers: number[], // 比大小用的数字数组
@@ -286,11 +286,11 @@ export function evaluateHand(playerCards,communityCards){
 
 //compare 2 combos
 /**
- * 比较两个牌型分数（无论是 evaluate5CardHand 还是 evaluateHand 的结果）
+ * Compare the scores of the two poker hands 
  *
  * @param {{category:number, tiebreakers:number[]}} a
  * @param {{category:number, tiebreakers:number[]}} b
- * @returns {number} 1 表示 a > b，-1 表示 a < b，0 表示平局
+ * @returns {number} 1 Indicates that a > b; -1 indicates that a < b; 0 indicates a draw.
  */
 
 export function compareScore(a,b){
@@ -317,13 +317,13 @@ export function compareScore(a,b){
     return 0;
 }
 /**
- * 比较两名玩家在同一公共牌下谁赢
- * 方便在 showdown 阶段直接用。
+ * Compare which of the two players wins when dealing with the same public cards.
+ * It is convenient to use in the showdown stage.
  *
- * @param {Array} playerACards - 玩家 A 的手牌（2 张）
- * @param {Array} playerBCards - 玩家 B 的手牌（2 张）
- * @param {Array} communityCards - 公共牌（0~5 张）
- * @returns {number} 1 表示 A 赢，-1 表示 B 赢，0 表示平局
+ * @param {Array} playerACards - player A's hand cards（2）
+ * @param {Array} playerBCards - player B's hand cards（2）
+ * @param {Array} communityCards - community cards（0~5）
+ * @returns {number} 1 indicates that A wins, -1 indicates that B wins, and 0 indicates a tie.
  */
 export function compareHands(playerACards, playerBCards, communityCards) {
   const resultA = evaluateHand(playerACards, communityCards);
@@ -332,11 +332,11 @@ export function compareHands(playerACards, playerBCards, communityCards) {
   return compareScore(resultA, resultB);
 }
 /**
- * 计算一局中所有玩家在当前公共牌下的牌力，并找出赢家（支持多人平局）
+ * Calculate the card strength of all players in the current public cards for one round, and determine the winner (allowing for multiple ties among players)
  *
- * @param {Array} players - 玩家列表，每项至少包含：
+ * @param {Array} players - player list：
  *        { id, name, cards: [{rank,suit},...], folded: boolean }
- * @param {Array} communityCards - 公共牌数组（0~5 张）
+ * @param {Array} communityCards - communitycards array（0~5）
  *
  * @returns {{
  *   winners: Array,        // 所有获胜玩家对象数组

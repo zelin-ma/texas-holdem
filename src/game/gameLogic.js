@@ -133,7 +133,7 @@ export function startHand(state){
 export function handlePlayerAction(state, payload) {
   const { playerIndex, kind, amount = 0 } = payload;
 
-  // 1. 只允许当前行动玩家操作，否则直接忽略
+  // 1. only let current player action allowed
   if (playerIndex !== state.currentPlayerIndex) {
     console.warn("不是该玩家的行动回合");
     return state;
@@ -144,25 +144,24 @@ export function handlePlayerAction(state, payload) {
 
   if (!player) return state;
   
-  // 如果玩家已经弃牌或 all-in，就不该再行动
+  // if player fold or all-in, no more action
   if (player.folded || player.allIn) {
     console.warn("该玩家已弃牌或 all-in");
     return state;
   }
 
-  // 从 state 拿出一些会被修改的字段
   let pot = state.pot;
   let currentBet = state.currentBet;
 
-  // 当前玩家为了“跟到当前下注”还需要支付多少
+  // How much does the current player need to pay in order to "continue betting at the current level"
   const toCall = Math.max(0, currentBet - (player.bet || 0));
 
-  // 准备记录日志
+  // message logs
   let logMsg = "";
 
-  // 小工具：从玩家扣钱、加入底池
+  // depositing players chips and joining the pot
   function payFromPlayer(p, payAmount) {
-    const realPay = Math.min(payAmount, p.chips); // 防止筹码不够
+    const realPay = Math.min(payAmount, p.chips); // Prevent insufficient chips
     if (realPay <= 0) return p;
 
     const newChips = p.chips - realPay;
@@ -177,10 +176,10 @@ export function handlePlayerAction(state, payload) {
     };
   }
 
-  // 2. 根据 kind 执行不同操作
+  // 2. Perform different operations based on the value of "kind"
   switch (kind) {
     case "fold": {
-      // 弃牌：不动筹码，只标记 folded
+      // fold
       player = {
         ...player,
         folded: true,
@@ -190,7 +189,7 @@ export function handlePlayerAction(state, payload) {
     }
 
     case "check": {
-      // 过牌：只能在本轮自己已经跟到 currentBet（或当前没人下注）时才允许
+      // check
       if (toCall > 0) {
         console.warn("当前有下注，不能 check，只能 call/raise");
         return state;
@@ -201,7 +200,7 @@ export function handlePlayerAction(state, payload) {
 
     case "call": {
       if (toCall === 0) {
-        // 没人下注时，call 等价于 check
+        // call: equal to check if nobody bet
         logMsg = `${player.name} 过牌`;
       } else {
         const beforeChips = player.chips;
@@ -213,7 +212,7 @@ export function handlePlayerAction(state, payload) {
     }
 
     case "bet": {
-      // 下注：只能在当前轮还没有任何下注（currentBet === 0）时进行
+      // bet
       if (currentBet > 0) {
         console.warn("已经有人下注，不能 bet，只能 raise");
         return state;
@@ -232,7 +231,7 @@ export function handlePlayerAction(state, payload) {
     }
 
     case "raise": {
-      // 加注：当前轮已有下注（currentBet > 0）时才能 raise
+      // raise： raise only when there is already an bet (currentBet > 0)
       if (currentBet === 0) {
         console.warn("当前没人下注，应该使用 bet 而不是 raise");
         return state;
@@ -242,7 +241,7 @@ export function handlePlayerAction(state, payload) {
         return state;
       }
 
-      // 理想情况下，加注后自己的 bet = currentBet + amount
+      //bet = currentBet + amount
       const targetBet = currentBet + amount;
       const needToPay = Math.max(0, targetBet - (player.bet || 0));
 
@@ -250,7 +249,7 @@ export function handlePlayerAction(state, payload) {
       player = payFromPlayer(player, needToPay);
       const paid = beforeChips - player.chips;
 
-      // 实际的 bet 可能因为筹码不足而变成 all-in，这时 currentBet = player.bet
+      //insufficient chips: bet = all-in
       currentBet = player.bet;
       logMsg = `${player.name} 加注到 ${player.bet}（本次支付 ${paid}）`;
       break;
@@ -262,10 +261,10 @@ export function handlePlayerAction(state, payload) {
         return state;
       }
       const beforeChips = player.chips;
-      player = payFromPlayer(player, player.chips); // 把所有筹码都压上去
+      player = payFromPlayer(player, player.chips); // Put all your chips on the table
       const paid = beforeChips - player.chips;
 
-      // all-in 可能是跟注、也可能是超过 currentBet 的加注
+      //"All-in" could either be a call or an increase in bet amount exceeding the "currentBet"
       currentBet = Math.max(currentBet, player.bet);
       logMsg = `${player.name} 全下 (${paid})`;
       break;
@@ -276,17 +275,17 @@ export function handlePlayerAction(state, payload) {
       return state;
   }
 
-  // 3. 把修改后的 player 写回 players 数组
+  // 3. Put the modified player back into the players array
   player = {
     ...player,
-    hasActedThisRound: true,   // 👈 这一轮已经轮到他行动了
+    hasActedThisRound: true, 
   };
   players[playerIndex] = player;
 
-  // 4. 找到下一个需要行动的玩家
+  // 4. find next player
   const nextPlayerIndex = findNextPlayerIndex(players, playerIndex);
 
-  // 5. 构造新的 state
+  // 5.renew state
   let newState = {
     ...state,
     players,
@@ -295,20 +294,20 @@ export function handlePlayerAction(state, payload) {
     currentPlayerIndex: nextPlayerIndex,
   };
 
-  // 6. 写入日志
+  // 6. write in message log
   if (logMsg) {
     newState = addMessage(newState, logMsg);
   }
 
-  // 7. 检查是否只剩一个未弃牌玩家：
-  //    如果是，那这个玩家直接赢下整个底池（无需摊牌）
+  // 7. Check if there is only one player left who is not folded:
+  //    If so, that player won
   const activePlayers = players.filter((p) => !p.folded);
   if (activePlayers.length === 1 && !newState.handFinished) {
     const winner = activePlayers[0];
     const winnerIdx = players.findIndex((p) => p.id === winner.id);
     const potAmount = newState.pot;
 
-    // 把底池全部给这个玩家
+    // entire pot to this player
     const updatedWinner = {
       ...players[winnerIdx],
       chips: players[winnerIdx].chips + potAmount,
@@ -342,60 +341,58 @@ export function handlePlayerAction(state, payload) {
 export function goToNextPhase(state) {
     const { phase } = state;
 
-    // 如果还没开始，或者已经摊牌了，就不再往后推进
+    // If it hasn't started yet, or if it's already showdown, stop moving forward.
     if (phase === PHASES.IDLE || phase === PHASES.SHOWDOWN) {
         return state;
     }
 
-    // 如果当前是 river，下一步就是摊牌，不再发牌
+    //if river，next phase is showdown
     if (phase === PHASES.RIVER) {
-        // 直接进入摊牌逻辑
         return doShowdown(state);
     }
 
     let deck = [...state.deck];
     let communityCards = [...state.communityCards];
-    let players = state.players.map((p) => ({ ...p })); // 浅拷贝即可
+    let players = state.players.map((p) => ({ ...p })); 
 
     let newPhase = phase;
     let cardsToDeal = 0;
 
-    // 根据当前阶段决定要发多少公共牌 & 下一个阶段
+    // how many community cards in each phase
     if (phase === PHASES.PREFLOP) {
-        // 发 flop：三张公共牌
+        // 发 flop：3 cards
         newPhase = PHASES.FLOP;
         cardsToDeal = 3;
     } else if (phase === PHASES.FLOP) {
-        // 发 turn：一张公共牌
+        // 发 turn：1 cards
         newPhase = PHASES.TURN;
         cardsToDeal = 1;
     } else if (phase === PHASES.TURN) {
-        // 发 river：一张公共牌
+        // 发 river：1 cards
         newPhase = PHASES.RIVER;
         cardsToDeal = 1;
     }
 
-    // 从牌堆顶发出 cardsToDeal 张公共牌
+    // Dealing out cardsToDeal number of cards from the top of the deck
     for (let i = 0; i < cardsToDeal; i++) {
         const { card, deck: newDeck } = drawOne(deck);
         deck = newDeck;
         communityCards.push(card);
     }
 
-    // 新一轮下注：把所有玩家本轮 bet 清零
+    // new round bet：clear bet amount
     players = players.map((p) => ({
         ...p,
         bet: 0,
         hasActedThisRound: false,
     }));
 
-    // 新一轮当前需要跟注的金额也清零
     const currentBet = 0;
 
-    // 新一轮开始时，一般由庄家左边第一个未弃牌/未 all-in 的玩家先行动
+    // At the beginning of a new round, the player on the left of the dealer who has not folded or "all-in" is usually the first to act.
     const currentPlayerIndex = findNextPlayerIndex(players, state.dealerIndex);
 
-    // 组装新的 state
+    // new state
     let newState = {
         ...state,
         phase: newPhase,
@@ -406,7 +403,7 @@ export function goToNextPhase(state) {
         currentPlayerIndex,
     };
 
-    // 写一条日志
+    // messagelog
     if (newPhase === PHASES.FLOP) {
         newState = addMessage(
         newState,
@@ -431,7 +428,7 @@ export function goToNextPhase(state) {
  * Showdown stage: Use handEvaluator to calculate the winner and distribute the chips.
  */
 export function doShowdown(state) {
-  // 如果已经摊牌过了，就不要重复结算
+  // if already showdown, no need to settlement again
   if (state.phase === PHASES.SHOWDOWN || state.handFinished) {
     return state;
   }
@@ -440,10 +437,10 @@ export function doShowdown(state) {
   const communityCards = state.communityCards;
   let pot = state.pot;
 
-  // 只留未弃牌的玩家
+  // only left the players unfolded
   const activePlayers = players.filter((p) => !p.folded);
 
-  // 如果底池为 0 或者没有有效玩家，直接结束
+  // If the pot is zero or there are no valid players, immediately end the game.
   if (pot <= 0 || activePlayers.length === 0) {
     return {
       ...state,
@@ -452,11 +449,10 @@ export function doShowdown(state) {
     };
   }
 
-  // 使用 handEvaluator 中的 getWinners 找出所有赢家
+  // use getWinners in handEvaluator to find winner
   const { winners, bestResult } = getWinners(players, communityCards);
 
   if (!winners || winners.length === 0) {
-    // 理论上不会出现，没有赢家就直接结束
     return {
       ...state,
       phase: PHASES.SHOWDOWN,
@@ -464,15 +460,15 @@ export function doShowdown(state) {
     };
   }
 
-  // 计算每个赢家应得的筹码（主池平分，余数给第一个赢家）
+  // Calculate the chips that each winner is entitled to
   const winnerCount = winners.length;
-  const share = Math.floor(pot / winnerCount); // 每人基本分
-  const remainder = pot % winnerCount;         // 余数
+  const share = Math.floor(pot / winnerCount); 
+  const remainder = pot % winnerCount;         
 
   const winnerIds = new Set(winners.map((w) => w.id));
   const firstWinnerId = winners[0].id;
 
-  // 给玩家分配筹码
+  // Distribute chips to the players
   const newPlayers = players.map((p) => {
     if (!winnerIds.has(p.id)) return p;
 
@@ -483,13 +479,13 @@ export function doShowdown(state) {
     };
   });
 
-  // 解析牌型名称（如 "Full House"）
+  // Parse the name of the card hand
   const rankKey = bestResult.rank ?? bestResult.category;
   const handName = HAND_CATEGORY[rankKey] || "Unknown Hand";
 
   const bestFive = bestResult.best5Cards || bestResult.cards || [];
 
-  // 拼接赢家名字
+  // names of the winners
   const winnerNames = winners.map((w) => w.name).join(", ");
 
   let logMsg;
@@ -502,10 +498,9 @@ export function doShowdown(state) {
   let newState = {
     ...state,
     players: newPlayers,
-    pot: 0,                         // 底池清空
+    pot: 0,                         // clear pot
     phase: PHASES.SHOWDOWN,
     handFinished: true,
-    // 方便 UI 使用的简单记录（可选）
     lastWinners: winners.map((w) => w.id),
     lastWinningHand: {
       rank: rankKey,
@@ -558,7 +553,7 @@ export function startNextHand(state) {
   };
 }
 
-// 判断这一轮下注是否已经结束
+// Determine whether this round of betting has ended
 export function isBettingRoundComplete(state) {
   const { players, currentBet } = state;
 
@@ -566,16 +561,16 @@ export function isBettingRoundComplete(state) {
     (p) => !p.folded && !p.allIn && p.chips > 0
   );
 
-  // 只有一个或者零个有效玩家：有人 all-in 或者别人都弃牌了
+  // There is either one or zero valid players: someone has all-in or everyone else has folded.
   if (active.length <= 1) return true;
 
-  // currentBet === 0：大家都没有下注，这一轮如果每个人都至少“check 过一次”，则结束
+  // If currentBet is 0: No one has placed a bet. If each player has "checked" at least once in this round, then the round is over.
   if (currentBet === 0) {
     const allActed = active.every((p) => p.hasActedThisRound);
     return allActed;
   }
 
-  // currentBet > 0：有人下注或加注过
+  // currentBet > 0: Someone has placed a bet or increased their stake.
   const allMatched = active.every((p) => {
     const acted = p.hasActedThisRound;
     const betMatched = (p.bet || 0) === currentBet || p.chips === 0;
