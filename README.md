@@ -83,27 +83,27 @@ src/
 
 ## 🔄 Game Flow Overview
 - **▶ Start of Hand**
- -Dealer rotates
- -Blinds are posted
- -Each active player receives 2 cards
+ - Dealer rotates
+ - Blinds are posted
+ - Each active player receives 2 cards
 - **▶ Betting Rounds**
- -Player acts → Bots act with delay
- -Valid action transitions:
- -fold → next player
- -check → next player
- -call → next player
- -bet / raise → reset hasActedThisRound flags
- -When isBettingRoundComplete returns true → enable Next Phase
+ - Player acts → Bots act with delay
+ - Valid action transitions:
+ - fold → next player
+ - check → next player
+ - call → next player
+ - bet / raise → reset hasActedThisRound flags
+ - When isBettingRoundComplete returns true → enable Next Phase
 - **▶ Dealing Community Cards**
- -Flop (3 cards)
- -Turn (1 card)
- -River (1 card)
+ - Flop (3 cards)
+ - Turn (1 card)
+ - River (1 card)
 - **▶ Showdown**
- -Bots reveal cards
- -Best 5-card hand determined
- -Winner(s) awarded pot
- -Winner panel appears in top-right showing:
- -Winner names
- -Hand type (e.g. Full House)
- -5-card winning combination
+ - Bots reveal cards
+ - Best 5-card hand determined
+ - Winner(s) awarded pot
+ - Winner panel appears in top-right showing:
+ - Winner names
+ - Hand type (e.g. Full House)
+ - 5-card winning combination
 
