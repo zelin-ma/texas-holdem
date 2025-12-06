@@ -107,3 +107,13 @@ src/
   - Hand type (e.g. Full House)
   - 5-card winning combination
 
+## 🧠 Bot AI Logic
+
+| Situation           | Action Logic                              |
+| ------------------- | ----------------------------------------- |
+| No one has bet      | 60% check, 30% bet, 10% small bet         |
+| There is a bet      | fold / call / raise based on pot pressure |
+| Bet too large       | high chance of fold or all-in             |
+| Already matched bet | choose check or raise                     |
+
+
