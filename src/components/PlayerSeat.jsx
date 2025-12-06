@@ -112,10 +112,10 @@ function PlayerSeat({ player, isCurrent, isThinking, position, showCards = true}
 
       <div className="text-sm font-semibold">
         {name}{" "}
-        {busted && <span className="text-red-200 ml-1">（出局）</span>}
-        {!busted && folded && <span className="text-gray-700">(弃牌)</span>}
+        {busted && <span className="text-red-200 ml-1">(Busted)</span>}
+        {!busted && folded && <span className="text-gray-700">(Fold)</span>}
         {allIn && !busted && <span className="text-red-700 ml-1">ALL-IN</span>}
-        {isThinking && !busted && <span className="text-yellow-200 ml-1">行动中...</span>}
+        {isThinking && !busted && <span className="text-yellow-200 ml-1">Actioning...</span>}
       </div>
     </div>
   );

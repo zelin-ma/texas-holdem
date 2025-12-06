@@ -241,9 +241,9 @@ export function evaluate5CardHand(hand) {
  * @param {Array} playerCards - The array of the player's hand cards, lengh 2 [{rank,suit}, {rank,suit}]
  * @param {Array} communityCards - The array of public cards,length 0 to 5.
  * @returns {{
- *   rank: number,          // 牌型类别，等于 evaluate5CardHand 的 category（0~8）
- *   tiebreakers: number[], // 比大小用的数字数组
- *   best5Cards: Array      // 真正组成这手牌的 5 张牌（方便 UI 高亮）
+ *   rank: number,          
+ *   tiebreakers: number[], 
+ *   best5Cards: Array      
  * }}
  */
 
@@ -339,9 +339,9 @@ export function compareHands(playerACards, playerBCards, communityCards) {
  * @param {Array} communityCards - communitycards array（0~5）
  *
  * @returns {{
- *   winners: Array,        // 所有获胜玩家对象数组
- *   bestResult: Object,    // 获胜牌型的分数结构（rank/tiebreakers/best5Cards）
- *   resultsByPlayerId: Map // key = player.id, value = { result, folded }
+ *   winners: Array,        
+ *   bestResult: Object,    
+ *   resultsByPlayerId: Map 
  * }}
  */
 export function getWinners(players,communityCards) {

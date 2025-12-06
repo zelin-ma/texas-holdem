@@ -135,7 +135,7 @@ export function handlePlayerAction(state, payload) {
 
   // 1. only let current player action allowed
   if (playerIndex !== state.currentPlayerIndex) {
-    console.warn("不是该玩家的行动回合");
+    console.warn("Not this player turn");
     return state;
   }
 
@@ -146,7 +146,7 @@ export function handlePlayerAction(state, payload) {
   
   // if player fold or all-in, no more action
   if (player.folded || player.allIn) {
-    console.warn("该玩家已弃牌或 all-in");
+    console.warn("this player is folded or all-in");
     return state;
   }
 
@@ -184,29 +184,29 @@ export function handlePlayerAction(state, payload) {
         ...player,
         folded: true,
       };
-      logMsg = `${player.name} 弃牌`;
+      logMsg = `${player.name} fold`;
       break;
     }
 
     case "check": {
       // check
       if (toCall > 0) {
-        console.warn("当前有下注，不能 check，只能 call/raise");
+        console.warn("there was bet this round, can't check, only can call/raise");
         return state;
       }
-      logMsg = `${player.name} 过牌`;
+      logMsg = `${player.name} check`;
       break;
     }
 
     case "call": {
       if (toCall === 0) {
         // call: equal to check if nobody bet
-        logMsg = `${player.name} 过牌`;
+        logMsg = `${player.name} check`;
       } else {
         const beforeChips = player.chips;
         player = payFromPlayer(player, toCall);
         const paid = beforeChips - player.chips;
-        logMsg = `${player.name} 跟注 ${paid}`;
+        logMsg = `${player.name} call ${paid}`;
       }
       break;
     }
@@ -214,30 +214,30 @@ export function handlePlayerAction(state, payload) {
     case "bet": {
       // bet
       if (currentBet > 0) {
-        console.warn("已经有人下注，不能 bet，只能 raise");
+        console.warn("there was bet this round, can't check, only can raise");
         return state;
       }
       if (amount <= 0) {
-        console.warn("无效下注金额");
+        console.warn("unable bet amount");
         return state;
       }
       const beforeChips = player.chips;
       player = payFromPlayer(player, amount);
       const paid = beforeChips - player.chips;
 
-      currentBet = player.bet; // 本轮被刷新为该玩家的下注额
-      logMsg = `${player.name} 下注 ${paid}`;
+      currentBet = player.bet; 
+      logMsg = `${player.name} bet ${paid}`;
       break;
     }
 
     case "raise": {
       // raise： raise only when there is already an bet (currentBet > 0)
       if (currentBet === 0) {
-        console.warn("当前没人下注，应该使用 bet 而不是 raise");
+        console.warn("nobody bet,use bet not raise");
         return state;
       }
       if (amount <= 0) {
-        console.warn("无效加注金额");
+        console.warn("unable raise amount");
         return state;
       }
 
@@ -251,13 +251,13 @@ export function handlePlayerAction(state, payload) {
 
       //insufficient chips: bet = all-in
       currentBet = player.bet;
-      logMsg = `${player.name} 加注到 ${player.bet}（本次支付 ${paid}）`;
+      logMsg = `${player.name} raise to ${player.bet}（chips amount ${paid}）`;
       break;
     }
 
     case "all-in": {
       if (player.chips <= 0) {
-        console.warn("该玩家已没有筹码");
+        console.warn("this player has no chips");
         return state;
       }
       const beforeChips = player.chips;
@@ -266,12 +266,12 @@ export function handlePlayerAction(state, payload) {
 
       //"All-in" could either be a call or an increase in bet amount exceeding the "currentBet"
       currentBet = Math.max(currentBet, player.bet);
-      logMsg = `${player.name} 全下 (${paid})`;
+      logMsg = `${player.name} all-in (${paid})`;
       break;
     }
 
     default:
-      console.warn("未知操作 kind：", kind);
+      console.warn("unknown action kind：", kind);
       return state;
   }
 
@@ -325,7 +325,7 @@ export function handlePlayerAction(state, payload) {
 
     newState = addMessage(
       newState,
-      `${winner.name} 因所有对手弃牌直接获胜，赢得底池 ${potAmount}。`
+      `${winner.name} win the game because all opponents folded, won chips in pot ${potAmount}。`
     );
   }
 
@@ -407,17 +407,17 @@ export function goToNextPhase(state) {
     if (newPhase === PHASES.FLOP) {
         newState = addMessage(
         newState,
-        `进入 Flop 阶段，发出 3 张公共牌。`
+        `Flop phase, 3 community cards`
         );
     } else if (newPhase === PHASES.TURN) {
         newState = addMessage(
         newState,
-        `进入 Turn 阶段，发出第 4 张公共牌。`
+        `Turn phase, 4 community cards`
         );
     } else if (newPhase === PHASES.RIVER) {
         newState = addMessage(
         newState,
-        `进入 River 阶段，发出最后一张公共牌。`
+        `River phase, 5 community cards`
         );
     }
 
@@ -490,9 +490,9 @@ export function doShowdown(state) {
 
   let logMsg;
   if (winners.length === 1) {
-    logMsg = `${winnerNames} 以 ${handName} 获胜，赢得底池 ${pot} 筹码。`;
+    logMsg = `${winnerNames} win the game with ${handName},win ${pot} chips.`;
   } else {
-    logMsg = `平局：${winnerNames} 以相同牌型 ${handName} 平分底池 ${pot} 筹码。`;
+    logMsg = `tie:${winnerNames} same cards ${handName}, Split ${pot} chips.`;
   }
 
   let newState = {

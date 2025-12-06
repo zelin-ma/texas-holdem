@@ -50,13 +50,13 @@ function ActionPanel({
           className="px-6 py-2 bg-yellow-300 border-2 border-yellow-500 rounded-md font-bold shadow hover:bg-yellow-400"
           onClick={onStartHand}
         >
-          开始一局游戏
+          Start a game
         </button>
       ) : (
         <>
           <div className="text-sm font-semibold mb-1">
-            当前玩家: <span className="underline">{currentPlayer?.name}</span>{" "}
-            ，需跟注: {toCall}
+            Current Player: <span className="underline">{currentPlayer?.name}</span>{" "}
+            ,ToCall: {toCall}
           </div>
           {isHuman ? (
             <div className="flex gap-3">
@@ -72,19 +72,19 @@ function ActionPanel({
                 disabled={bettingComplete}
                 className="px-4 py-2 bg-yellow-300 border-2 border-yellow-500 rounded-md font-bold shadow disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400"
               >
-                {toCall === 0 ? "过牌" : `跟注 ${toCall}`}
+                {toCall === 0 ? "Check" : `Call ${toCall}`}
               </button>
               <button
                 onClick={handleBetSmall}
                 disabled={bettingComplete}
                 className="px-4 py-2 bg-yellow-300 border-2 border-yellow-500 rounded-md font-bold shadow disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400"
               >
-                {currentBet === 0 ? "加注 20" : "再加 20"}
+                {currentBet === 0 ? "Raise 20" : "Double 20"}
               </button>
             </div>
             ) : (
               <div className="text-sm text-yellow-200">
-                {isBotThinking ? "AI 正在思考…" : "等待 AI 行动"}
+                {isBotThinking ? "AI thinking…" : "wait for AI to action"}
               </div>
           )}
 
@@ -93,7 +93,7 @@ function ActionPanel({
             disabled={!canNextPhase}
             className="mt-2 px-4 py-1 bg-emerald-500 text-white text-sm rounded-md border border-emerald-700 shadow disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-600"
           >
-            Next Phase（发牌/摊牌）
+            Next Phase
           </button>
 
           {phase === "showdown" && (
@@ -101,13 +101,13 @@ function ActionPanel({
               onClick={onNextHand}
               className="mt-1 px-4 py-1 bg-indigo-500 text-white text-sm rounded-md border border-indigo-700 shadow hover:bg-indigo-600"
             >
-              下一局
+              Next Game
             </button>
           )}
 
           {bettingComplete && phase !== "showdown" && (
             <div className="mt-1 text-xs text-white">
-              本轮下注已结束，请点击 Next Phase。
+              This round bet is over, click Next Phase。
             </div>
           )}
         </>

@@ -16,7 +16,7 @@ function MessageLog({ messages }) {
       ref={containerRef}
       className="w-full h-full bg-black/50 text-white text-xs rounded-md p-2 overflow-y-auto"
     >
-      <div className="font-semibold mb-1">日志</div>
+      <div className="font-semibold mb-1">Message Log</div>
       <ul className="space-y-1">
         {messages.map((msg, idx) => (
           <li key={idx} className="leading-snug">

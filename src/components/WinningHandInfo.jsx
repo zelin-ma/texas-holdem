@@ -11,16 +11,16 @@ function WinningHandInfo({
   if (phase !== "showdown") return null;
 
   const winnerNames = lastWinners
-    .map((id) => players.find((p) => p.id === id)?.name ?? "未知玩家")
+    .map((id) => players.find((p) => p.id === id)?.name ?? "unknown player")
     .join(", ");
 
   const isTie = lastWinners.length > 1;
 
   return (
     <div className="bg-black/70 text-white text-xs md:text-sm rounded-md px-3 py-2 shadow-lg space-y-1">
-      <div className="font-semibold text-sm">本局结果</div>
+      <div className="font-semibold text-sm">game result</div>
       <div>
-        {isTie ? "平局获胜者：" : "获胜者："}
+        {isTie ? "Tie Winner:" : "Winner:"}
         <span className="font-semibold">{winnerNames}</span>
       </div>
       <div>
