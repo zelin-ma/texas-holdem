@@ -116,4 +116,10 @@ src/
 | Bet too large       | high chance of fold or all-in             |
 | Already matched bet | choose check or raise                     |
 
+## 📄 License
+```php-template
+
+MIT License © 2025 <Zelin MA>
+```
+
 
