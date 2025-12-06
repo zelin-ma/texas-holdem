@@ -65,7 +65,7 @@ function ActionPanel({
                 disabled={currentPlayer?.folded || bettingComplete}
                 className="px-4 py-2 bg-yellow-300 border-2 border-yellow-500 rounded-md font-bold shadow disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-400"
               >
-                弃牌
+                Fold
               </button>
               <button
                 onClick={handleCheckOrCall}
